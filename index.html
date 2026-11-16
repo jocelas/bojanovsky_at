@@ -1,75 +1,331 @@
+<!doctype html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-
-<title>Jonas Bojanovsky</title>
-<link rel="icon" type="image/x-icon" href="favicon.ico">
-	
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap');
-</style>
-	
-<style>
-	.abril-fatface-regular {
-  		font-family: "Abril Fatface", serif;
-  		font-weight: 400;
-  		font-style: normal;
-	}
-	
-	body {
-		display: grid;
-		
-		min-height: 80vh
-		align-items: center;
-		place-items: center;
-	}
-	
-	h1 {
-		font-size: 18vw;
-		line-height: 1.08ex;
-		cursor: default;
-	}
-	
-	h1::selection{
-		cursor: default;
-	}
-</style>
-
-<script type="text/javascript">
-function clock()
-{
-var today=new Date();
-var Y=today.getFullYear();
-var M=today.getMonth();
-var D=today.getDate();
-var h=today.getHours();
-var m=today.getMinutes();
-var s=today.getSeconds();
-// add a zero in front of numbers<10
-M=M+1;
-D=checkTime(D);
-M=checkTime(M);
-h=checkTime(h)
-m=checkTime(m);
-s=checkTime(s);
-document.getElementById('time').innerHTML=D+"."+M+"."+Y+" — "+h+":"+m+":"+s;
-t=setTimeout('clock()',100);
-}
-function checkTime(i)
-{
-if (i<10)
-{
-i="0" + i;
-}
-return i;
-}
-</script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Jonas Bojanovsky — GitHub, gallery, Helix, and Abschlusskonzert.">
+  <title>Jonas Bojanovsky</title>
+  <link rel="icon" href="https://bojanovsky.at/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap" rel="stylesheet">
+  <style>
+    /* GLOBAL SETTINGS. Link text, destinations, descriptions, and letter indexes
+       live together in the navigation below (indexes count from zero). */
+    :root {
+      --name-font: "Abril Fatface", serif;
+      --name-size: 18vw;
+      --name-line-height: 1.08ex;
+      --surname-offset: 1.5vw;
+      --link-font: monospace;
+      --link-size: clamp(13px, 1.1vw, 22px);
+      --accent-color: #A63D2F;
+      --hover-scale: 1.03;
+      --label-gap: 3px;
+      --label-travel: 12px;
+      --description-width: 20ch;
+      --description-opacity: .65;
+      --description-size: .82em;
+      --motion-duration: 180ms;
+      --motion-easing: cubic-bezier(.2, .7, .2, 1);
+      --intro-duration: 1000ms; /* Total wave, including the last pulse. */
+      --intro-pulse-fraction: .48;
+      --foreground: #24211E;
+      --background: #F5F2EB;
+      --list-width: 560px;
+      --list-description-width: 32ch;
+      --list-padding: 24px;
+      --lower-j-clip: .14em;
+      --scroll-hint-delay: 2000ms;
+      --scroll-hint-size: 24px;
+      --scroll-hint-gap: 20px;
+      --scroll-hint-opacity: .55;
+    }
+    body {
+      margin: 8px;
+      color: var(--foreground);
+      background: var(--background);
+      font-family: sans-serif;
+      -webkit-text-size-adjust: 100%;
+    }
+    .composition { position: relative; text-align: center; display: flow-root; }
+    /* Same font, size, line height, spacer, and default h1 margins as the original.
+       Only the lower j's dot is clipped; its stem and descender stay intact. */
+    h1 {
+      font-family: var(--name-font);
+      font-weight: 400;
+      font-style: normal;
+      font-size: var(--name-size);
+      line-height: var(--name-line-height);
+      cursor: default;
+      white-space: nowrap;
+    }
+    .lower-j { display: inline-block; clip-path: inset(var(--lower-j-clip) -1em -1em -1em); }
+    .scroll-hint {
+      position: relative;
+      height: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--motion-duration) var(--motion-easing);
+    }
+    .scroll-hint.is-visible { opacity: var(--scroll-hint-opacity); }
+    .scroll-hint svg {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      width: var(--scroll-hint-size);
+      height: var(--scroll-hint-size);
+      transform: translate(-50%, calc(-100% - var(--scroll-hint-gap)));
+    }
+    .surname-spacer { display: inline-block; width: var(--surname-offset); }
+    .links { max-width: var(--list-width); margin: 0 auto 32px; padding: 0 var(--list-padding); text-align: left; }
+    .project {
+      color: inherit;
+      text-decoration: none;
+      display: block;
+      padding: 20px 0;
+      border-top: 1px solid #dedbd7;
+      font-family: var(--link-font);
+      font-size: 17px;
+      line-height: 1.4;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .project:last-child { border-bottom: 1px solid #dedbd7; }
+    .glyph { display: none; }
+    .label, .label-text, .description { display: block; }
+    .description {
+      margin-top: 5px;
+      max-width: var(--list-description-width);
+      font-size: var(--description-size);
+      opacity: var(--description-opacity);
+      font-weight: 400;
+    }
+    .project:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 5px; }
+    .project:active { color: var(--accent-color); }
+    @media (min-width: 761px) and (hover: hover) and (pointer: fine) {
+      .enhanced .scroll-hint { display: none; }
+      .enhanced .source-letter { color: transparent; }
+      .enhanced .links { margin: 0; padding: 0; }
+      .enhanced .project {
+        position: absolute;
+        left: var(--x);
+        top: var(--y);
+        width: var(--width);
+        height: var(--height);
+        padding: 0;
+        border: 0;
+        font-size: var(--name-size);
+        transform-origin: center;
+        transition: color var(--motion-duration) var(--motion-easing), transform var(--motion-duration) var(--motion-easing);
+      }
+      .enhanced .glyph {
+        display: block;
+        position: absolute;
+        top: var(--glyph-offset, 0px);
+        left: 0;
+        font-family: var(--name-font);
+        font-weight: 400;
+        line-height: var(--name-line-height);
+      }
+      .enhanced .label {
+        position: absolute;
+        left: 50%;
+        top: calc(var(--ink-top) - var(--label-gap));
+        width: max-content;
+        max-width: var(--description-width);
+        font-size: var(--link-size);
+        line-height: 1.4;
+        text-align: center;
+        transform: translate(-50%, -100%);
+      }
+      .enhanced .label-content {
+        display: block;
+        position: relative;
+        transition: transform var(--motion-duration) var(--motion-easing);
+      }
+      /* This transparent bridge keeps hover active while the label moves. */
+      .enhanced .label::after {
+        content: "";
+        position: absolute;
+        inset: calc(-1 * var(--label-travel)) 0 calc(-1 * (var(--label-travel) + var(--label-gap)));
+      }
+      .enhanced .description {
+        position: absolute;
+        bottom: calc(100% + 5px);
+        left: 50%;
+        width: var(--description-width);
+        transform: translate(-50%, 4px);
+        margin: 0;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity var(--motion-duration), transform var(--motion-duration), visibility var(--motion-duration);
+      }
+      .enhanced .project[data-side="below"] .label {
+        top: calc(var(--ink-bottom) + var(--label-gap));
+        transform: translate(-50%, 0);
+      }
+      .enhanced .project[data-side="below"] .description { bottom: auto; top: calc(100% + 5px); }
+      .enhanced .project:is(:hover, :focus-visible, .intro-active) { color: var(--accent-color); transform: scale(var(--hover-scale)); }
+      .enhanced .project:is(:hover, :focus-visible, .intro-active) .label-content { transform: translateY(calc(-1 * var(--label-travel))); }
+      .enhanced .project[data-side="below"]:is(:hover, :focus-visible, .intro-active) .label-content { transform: translateY(var(--label-travel)); }
+      .enhanced .project:is(:hover, :focus-visible, .intro-active) .description { opacity: var(--description-opacity); visibility: visible; transform: translate(-50%, 0); }
+      .enhanced .project:focus-visible { outline: none; }
+      .enhanced .project:focus-visible .label-text { outline: 2px solid currentColor; outline-offset: 4px; }
+    }
+    @media (max-width: 760px), (hover: none), (pointer: coarse) {
+      body { margin: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      :root { --label-travel: 0px; --hover-scale: 1; }
+      .scroll-hint { transition: none; }
+      .enhanced .project, .enhanced .label-content, .enhanced .description { transition: none; }
+      .enhanced .project:is(:hover, :focus-visible, .intro-active) { transform: none; }
+      .enhanced .project:is(:hover, :focus-visible, .intro-active) .label-content { transform: none; }
+    }
+  </style>
 </head>
-<body style = "font-family:sans-serif;" onload="clock()">
-<div style = "text-align:center;">
-	<h1 class = "abril-fatface-regular">Jonas<br><span style="display: inline-block; width: 1.5vw"></span>Bojanovsky</h1>
-<div style = "font-size:2em;font-family:monospace;" id="time"></div>
-
-
-
-</div>
+<body>
+  <main class="composition">
+    <h1 aria-label="Jonas Bojanovsky">Jonas<br><span class="surname-spacer"></span>Bojanovsky</h1>
+    <div class="scroll-hint" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none"><path d="M10 3v13M5 11l5 5 5-5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <nav class="links" aria-label="Projects and profiles">
+      <a class="project" href="https://github.com/jocelas" data-line="0" data-letter="0" target="_blank" aria-describedby="github-description"><span class="label"><span class="label-content"><span class="label-text">github</span><span class="description" id="github-description">Explore my code and repositories.</span></span></span></a>
+      <a class="project" href="https://bojanovsky.at/gallery" data-line="1" data-letter="0" aria-describedby="gallery-description"><span class="label"><span class="label-content"><span class="label-text">gallery</span><span class="description" id="gallery-description">Browse my gallery.</span></span></span></a>
+      <a class="project" href="https://bojanovsky.at/helix" data-line="0" data-letter="4" aria-describedby="helix-description"><span class="label"><span class="label-content"><span class="label-text">helix</span><span class="description" id="helix-description">Discover the Helix project.</span></span></span></a>
+      <a class="project" href="https://abschlusskonzert.bojanovsky.at" data-line="1" data-letter="8" data-side="below" aria-describedby="concert-description"><span class="label"><span class="label-content"><span class="label-text">abschlusskonzert</span><span class="description" id="concert-description">Visit the Abschlusskonzert website.</span></span></span></a>
+    </nav>
+  </main>
+  <script>
+    // Keep the original heading in normal inline text flow. Measure its letters
+    // and place interactive copies over them, so animation never changes kerning.
+    const composition = document.querySelector('.composition');
+    const heading = document.querySelector('h1');
+    const projects = [...document.querySelectorAll('.project')];
+    const desktop = matchMedia('(min-width: 761px) and (hover: hover) and (pointer: fine)');
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    const lines = [...heading.childNodes].filter(node => node.nodeType === Node.TEXT_NODE);
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    const records = [];
+    // Process right to left to keep the configured character indexes stable.
+    [...projects].sort((a, b) => Number(b.dataset.letter) - Number(a.dataset.letter)).forEach(link => {
+      const node = lines[Number(link.dataset.line)];
+      const character = node.splitText(Number(link.dataset.letter));
+      character.splitText(1);
+      const source = document.createElement('span');
+      source.className = 'source-letter';
+      character.replaceWith(source);
+      source.append(character);
+      const glyph = document.createElement('span');
+      glyph.className = 'glyph';
+      glyph.setAttribute('aria-hidden', 'true');
+      glyph.textContent = character.textContent;
+      link.prepend(glyph);
+      records.push({link, source, glyph});
+    });
+    // Isolate the lower j after letter indexes have been resolved.
+    const nameText = document.createTreeWalker(heading, NodeFilter.SHOW_TEXT);
+    while (nameText.nextNode()) {
+      const node = nameText.currentNode;
+      const index = node.textContent.indexOf('j');
+      if (index < 0) continue;
+      const character = node.splitText(index);
+      character.splitText(1);
+      const lowerJ = document.createElement('span');
+      lowerJ.className = 'lower-j';
+      character.replaceWith(lowerJ);
+      lowerJ.append(character);
+      break;
+    }
+    const scrollHint = document.querySelector('.scroll-hint');
+    const links = document.querySelector('.links');
+    let hintReady = false;
+    let hintDismissed = window.scrollY > 0;
+    let previousScrollY = window.scrollY;
+    function updateScrollHint() {
+      const viewportBottom = window.visualViewport
+        ? window.visualViewport.offsetTop + window.visualViewport.height
+        : window.innerHeight;
+      const listOverflows = links.getBoundingClientRect().bottom > viewportBottom + 1;
+      scrollHint.classList.toggle('is-visible', hintReady && !hintDismissed && !desktop.matches && listOverflows);
+    }
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > previousScrollY) hintDismissed = true;
+      previousScrollY = window.scrollY;
+      updateScrollHint();
+    }, {passive: true});
+    window.visualViewport?.addEventListener('resize', updateScrollHint);
+    new ResizeObserver(updateScrollHint).observe(links);
+    function scheduleScrollHint() {
+      const delay = getComputedStyle(composition).getPropertyValue('--scroll-hint-delay').trim();
+      setTimeout(() => {
+        hintReady = true;
+        updateScrollHint();
+      }, parseFloat(delay) * (delay.endsWith('ms') ? 1 : 1000));
+    }
+    if (document.readyState === 'complete') scheduleScrollHint();
+    else window.addEventListener('load', scheduleScrollHint, {once: true});
+    function textBounds(element) {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      return range.getBoundingClientRect();
+    }
+    function layout() {
+      composition.classList.toggle('enhanced', desktop.matches);
+      updateScrollHint();
+      if (!desktop.matches) return;
+      const parent = composition.getBoundingClientRect();
+      const style = getComputedStyle(heading);
+      context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+      records.forEach(({link, source, glyph}) => {
+        const rect = textBounds(source);
+        link.style.setProperty('--x', `${rect.left - parent.left}px`);
+        link.style.setProperty('--y', `${rect.top - parent.top}px`);
+        link.style.setProperty('--width', `${rect.width}px`);
+        link.style.setProperty('--height', `${rect.height}px`);
+        glyph.style.setProperty('--glyph-offset', '0px');
+        const copy = textBounds(glyph);
+        glyph.style.setProperty('--glyph-offset', `${rect.top - copy.top}px`);
+        const metrics = context.measureText(source.textContent);
+        const ascent = metrics.fontBoundingBoxAscent ?? parseFloat(style.fontSize) * .9;
+        link.style.setProperty('--ink-top', `${ascent - metrics.actualBoundingBoxAscent}px`);
+        link.style.setProperty('--ink-bottom', `${ascent + metrics.actualBoundingBoxDescent}px`);
+      });
+    }
+    function intro() {
+      if (!desktop.matches || reducedMotion.matches) return;
+      const settings = getComputedStyle(composition);
+      const time = settings.getPropertyValue('--intro-duration').trim();
+      const total = parseFloat(time) * (time.endsWith('ms') ? 1 : 1000);
+      const fraction = Math.min(1, Math.max(.1, parseFloat(settings.getPropertyValue('--intro-pulse-fraction'))));
+      const pulse = total * fraction;
+      // Project the actual letter centers onto a top-left → bottom-right diagonal.
+      const positions = records.map(({link}) => {
+        const rect = link.getBoundingClientRect();
+        return {link, distance: rect.left + rect.width / 2 + rect.top + rect.height / 2};
+      });
+      const start = Math.min(...positions.map(item => item.distance));
+      const span = Math.max(...positions.map(item => item.distance)) - start || 1;
+      positions.forEach(({link, distance}) => {
+        const delay = (distance - start) / span * (total - pulse);
+        setTimeout(() => {
+          if (!desktop.matches || reducedMotion.matches) return;
+          link.style.setProperty('--motion-duration', `${pulse / 2}ms`);
+          link.classList.add('intro-active');
+          setTimeout(() => link.classList.remove('intro-active'), pulse / 2);
+          setTimeout(() => link.style.removeProperty('--motion-duration'), pulse);
+        }, delay);
+      });
+    }
+    let frame;
+    window.addEventListener('resize', () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(layout);
+    });
+    desktop.addEventListener('change', layout);
+    layout();
+    document.fonts.ready.then(() => { layout(); requestAnimationFrame(intro); });
+  </script>
 </body>
+</html>
