@@ -1,2 +1,3 @@
 wordpress
-/gallery/photos
+/gallery/photos/*
+!/gallery/photos/*.txt

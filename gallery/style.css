@@ -12,7 +12,7 @@ button { -webkit-tap-highlight-color: transparent; }
 .gallery-header { margin-bottom: 32px; padding-right: 40px; }
 .home-link { font: 13px/1.5 monospace; text-decoration: none; }
 .home-link:hover { color: var(--accent-color); }
-h1 { margin: 32px 0 8px; font: 400 clamp(44px, 6vw, 72px)/1.1 Georgia, serif; letter-spacing: -.04em; }
+h1 { margin: 32px 0 8px; font: 400 clamp(44px, 6vw, 72px)/1.1 "Abril Fatface", serif; }
 .gallery-header p { color: var(--muted); font: 13px/1.6 monospace; }
 .gallery-header p span { margin: 0 8px; }
 .gallery-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }

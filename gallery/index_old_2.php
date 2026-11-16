@@ -29,6 +29,9 @@ function galleryEscape($text) {
   <meta name="description" content="A collection of photographs by Jonas Bojanovsky.">
   <title>Jonas Bojanovsky — Gallery</title>
   <link rel="icon" href="../favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../theme.css">
   <link rel="stylesheet" href="style.css">
   <script src="../theme.js" defer></script>

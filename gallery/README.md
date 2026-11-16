@@ -10,6 +10,8 @@ files (for example, `bus.jpg` and `bus.txt`). Then run:
 python3 gallery/generate_thumbnails.py
 ```
 
+Caption files are tracked in Git; original photographs remain ignored.
+
 The script requires Pillow (`python3 -m pip install Pillow`). It creates small,
 EXIF-oriented, square WebP previews in `thumbnails/` and skips unchanged files.
 Upload the thumbnails along with the PHP, CSS, and JavaScript files. Originals
