@@ -1,0 +1,97 @@
+<!doctype html>
+<head>
+<meta charset = 'utf-8'?>
+<title>Jonas Bojanovsky — Gallery</title>
+<link rel="icon" type="image/x-icon" href="../favicon.ico">
+<link rel="stylesheet" href="style.css">
+
+
+<?php
+
+
+function getfiles($path){
+	$files = scandir($path);
+	// this function outputs the array
+	print '[';
+	foreach ($files as $value) {
+		if ($value[0] != '.'){
+			print '"' . $value . '", ';
+		}
+	}
+	print ']';
+}
+
+
+?>
+
+<script>
+//var fs = require('fs');
+//var ims = fs.readdirSync('photos/');
+
+const ims = ['12.jpg', '13.jpg', '20231012_062822768_iOS_01.jpg', '29.jpg', '30.jpg', '31.jpg', 'bus.jpg', 'IMG_0002.jpg', 'IMG_0003.jpg', 'IMG_0006.jpg', 'IMG_0008.jpg', 'IMG_0017.jpg', 'IMG_0021.jpg', 'IMG_0023.jpg', 'IMG_0025.jpg', 'IMG_0026.jpg', 'IMG_0029.jpg', '_DSC0211.jpg', '_DSC0232.jpg', '_DSC0253.jpg', 'novafptaf.jpg'];
+var i = 0;
+var out = '';
+
+var numcols = 4;	
+var size = '25vw';
+
+var descr = "This is a very long description of the image, please do not remove this and read this, this is very important"
+
+function maketable(filename) {
+	if (i==0){
+		out += '<tr>';
+	}
+	out += '<td style = "width: '+size+'; height: '+size+'"><a href = "photos/'+filename+'"><img src = "photos/'+filename+'" class = "tn"></a><div class = "des">'+descr+'</div></td>';
+	i++;
+	if (i == numcols){
+		out += '</tr>';
+		i = 0;
+	}
+}
+
+function writetable(table){
+	document.getElementById('maintable').innerHTML = table;
+}
+
+function changecols() {
+
+	if (window.innerWidth < window.innerHeight){
+		numcols = 2;
+	} else {
+		numcols = 4;
+	}
+	
+	//var td = document.querySelector('table#maintable tr td');
+	
+	if (numcols == 2){
+		size = '50vw'
+	} else {
+		size = '25vw';
+	}
+	
+	out = '';
+	i = 0;
+	ims.forEach(maketable);
+	writetable(out);
+
+}
+
+window.onload = function(){
+	ims.forEach(maketable);
+	writetable(out);
+	changecols();
+}
+</script> 
+
+</head>
+
+<body onresize = 'changecols();'>
+
+<div class = 'container'>
+<h1>Gallery</h1>
+<table class = 'thumbnails' id = 'maintable'>
+<!-- here are the photos by the script -->
+</table>
+
+</div>
+</body>

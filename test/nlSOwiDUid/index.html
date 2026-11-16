@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Abschlusskonzert – Jonas Bojanovsky</title>
+    <link rel="stylesheet" href="tools/invitation.css" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(
+          135deg,
+          #0d0d0d 0%,
+          #1a1005 50%,
+          #0d0d0d 100%
+        );
+        background-attachment: fixed;
+        font-family: "Georgia", "Times New Roman", serif;
+        color: #f5eedd;
+      }
+
+      .container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        width: 100%;
+        max-width: 900px;
+      }
+
+      h1 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        text-align: center;
+        letter-spacing: 0.05em;
+        color: #e8d48b;
+      }
+
+      .subtitle {
+        font-size: 1.1rem;
+        margin-bottom: 2.5rem;
+        opacity: 0.85;
+        color: #a89968;
+        text-align: center;
+        font-style: italic;
+      }
+
+      .flags {
+        display: flex;
+        gap: 2.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .flag-link {
+        text-decoration: none;
+        color: #f5eedd;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+        transition:
+          transform 0.25s ease,
+          opacity 0.25s ease;
+      }
+
+      .flag-link:hover {
+        transform: scale(1.08);
+        cursor: none;
+      }
+
+      .flag-link:active {
+        transform: scale(0.97);
+      }
+
+      .flag {
+        width: 140px;
+        height: 93px;
+        border-radius: 0;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        overflow: hidden;
+        border: none;
+      }
+
+      .flag svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .lang-label {
+        font-size: 1.15rem;
+        letter-spacing: 0.04em;
+        color: #c9a84c;
+      }
+
+      /* Phone adjustments */
+      @media (max-width: 600px) {
+        h1 {
+          font-size: 1.5rem;
+        }
+        .subtitle {
+          font-size: 0.95rem;
+          margin-bottom: 2rem;
+        }
+        .flags {
+          gap: 1.8rem;
+        }
+        .flag {
+          width: 110px;
+          height: 73px;
+        }
+
+        .flags a:hover{
+            cursor: none;
+        }
+
+        .flags:hover{
+            cursor: none;
+        }
+
+        .lang-label {
+          font-size: 1rem;
+        }
+    }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Abschlusskonzert</h1>
+      <p class="subtitle">
+        Sprache wählen / Vyberte jazyk / Choose your language
+      </p>
+
+      <div class="flags">
+        <!-- Deutsch – Austria flag -->
+        <a href="deutsch/" class="flag-link" title="Deutsch">
+          <div class="flag">
+            <svg viewBox="0 0 3 2" xmlns="http://www.w3.org/2000/svg">
+              <rect width="3" height="0.6667" fill="#ED2939" />
+              <rect y="0.6667" width="3" height="0.6667" fill="#FFFFFF" />
+              <rect y="1.3333" width="3" height="0.6667" fill="#ED2939" />
+            </svg>
+          </div>
+          <span class="lang-label">Deutsch</span>
+        </a>
+
+        <!-- Česky – Czech flag -->
+        <a href="cesky/" class="flag-link" title="Česky">
+          <div class="flag">
+            <svg viewBox="0 0 3 2" xmlns="http://www.w3.org/2000/svg">
+              <rect width="3" height="1" fill="#FFFFFF" />
+              <rect y="1" width="3" height="1" fill="#D7141A" />
+              <polygon points="0,0 1.5,1 0,2" fill="#11457E" />
+            </svg>
+          </div>
+          <span class="lang-label">Česky</span>
+        </a>
+
+        <!-- English – UK flag -->
+        <a href="english/" class="flag-link" title="English">
+          <div class="flag">
+            <svg viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg">
+              <clipPath id="s"><path d="M0,0 v30 h60 v-30 z" /></clipPath>
+              <clipPath id="t">
+                <path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z" />
+              </clipPath>
+              <g clip-path="url(#s)">
+                <path d="M0,0 v30 h60 v-30 z" fill="#012169" />
+                <path
+                  d="M0,0 L60,30 M60,0 L0,30"
+                  stroke="#fff"
+                  stroke-width="6"
+                />
+                <path
+                  d="M0,0 L60,30 M60,0 L0,30"
+                  clip-path="url(#t)"
+                  stroke="#C8102E"
+                  stroke-width="4"
+                />
+                <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10" />
+                <path
+                  d="M30,0 v30 M0,15 h60"
+                  stroke="#C8102E"
+                  stroke-width="6"
+                />
+              </g>
+            </svg>
+          </div>
+          <span class="lang-label">English</span>
+        </a>
+      </div>
+    </div>
+
+    <footer>
+      &copy; Jonas Bojanovsky 2026<span style="display: inline-block; width: 1ch;"></span
+        ><a href="data/" target="_blank">Datenschutz</a></span
+      >
+    </footer>
+    <script src="tools/glitter_reveal.js"></script>
+  </body>
+</html>

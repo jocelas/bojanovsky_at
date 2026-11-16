@@ -1,0 +1,11 @@
+Color Palette – Violin Graduation Concert
+===========================================
+
+background-dark:    #0D0D0D
+background-mid:     #1A1005
+gold-primary:       #C9A84C
+gold-light:         #E8D48B
+gold-accent:        #FFD700
+text-light:         #F5EEDD
+text-muted:         #A89968
+details-bg:         #c9a84c1a

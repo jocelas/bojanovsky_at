@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Helix Calculator</title>
+  <link rel="stylesheet" href="pico.min.css">
+  <link rel="stylesheet" href="mobile-friendly.css">
+  <style>
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Helix Calculator</h1>
+
+    <article>
+      <div class="input-row">
+        <label>Outer Length (mm)</label>
+        <button class="small" onclick="changeValue('outerLength', -1)">−</button>
+        <input id="outerLength" type="number" value="30" step="0.5">
+        <button class="small" onclick="changeValue('outerLength', 1)">+</button>
+      </div>
+
+      <div class="input-row">
+        <label>Cut Angle (°)</label>
+        <button class="small" onclick="changeValue('cutAngle', -0.5)">−</button>
+        <input id="cutAngle" type="number" value="7.5" step="0.5">
+        <button class="small" onclick="changeValue('cutAngle', 0.5)">+</button>
+      </div>
+
+      <div class="input-row">
+        <label>Pipe Diameter (inches)</label>
+        <button class="small" onclick="changeValue('pipeDiameter', -0.1)">−</button>
+        <input id="pipeDiameter" type="number" value="2.5" step="0.1">
+        <button class="small" onclick="changeValue('pipeDiameter', 0.1)">+</button>
+      </div>
+
+      <div class="input-row">
+        <label>Desired Height (mm)</label>
+        <button class="small" onclick="changeValue('desiredLength', -10)">−</button>
+        <input id="desiredLength" type="number" value="1000" step="10">
+        <button class="small" onclick="changeValue('desiredLength', 10)">+</button>
+      </div>
+
+      <button id="calcBtn" class="contrast">Calculate</button> <span style="margin-left: 5em">(Results below)</span>
+    </article>
+
+    <h2>Viable Helices</h2>
+    <div class="scroll-container">
+      <table id="resultsTable">
+        <thead>
+          <tr>
+            <th>Twist<br>(°)</th>
+            <th>#<br>Segments</th>
+            <th>Height<br>(mm)</th>
+            <th>#<br>turns</th>
+            <th>Outer Ø<br>(mm)</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody">
+          <tr><td colspan="6">No results yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script src="plotly-3.1.0.min.js"></script>
+  <script src="helper_functions.js"></script>
+  <script src="plottinghelix.js"></script>
+  <script>
+    const H = window.HelixHelpers;
+
+    function changeValue(id, delta) {
+      const el = document.getElementById(id);
+      el.value = (parseFloat(el.value) + delta).toFixed(2);
+    }
+
+    function calcHelices() {
+      const outerLength = parseFloat(document.getElementById('outerLength').value);
+      const cutAngle = parseFloat(document.getElementById('cutAngle').value);
+      const pipeDiameterInches = parseFloat(document.getElementById('pipeDiameter').value);
+      const desiredLength = parseFloat(document.getElementById('desiredLength').value);
+
+      const pipeDiameter = pipeDiameterInches * 25.4;
+      const theta = cutAngle * 2;
+      const L = H.center_length_from_outer(outerLength, cutAngle, pipeDiameter);
+
+      const results = H.list_possible_helices(L, theta, pipeDiameter, desiredLength);
+      const tbody = document.getElementById('resultsBody');
+      tbody.innerHTML = "";
+
+      if (!results.length) {
+        tbody.innerHTML = `<tr><td colspan="6">No valid helices found for these parameters.</td></tr>`;
+        return;
+      }
+
+      for (const row of results) {
+        const [tau, Nsegments, actualLength, Nturns, outer_diameter] = row;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${tau.toFixed(2)}</td>
+          <td>${Nsegments}</td>
+          <td>${actualLength.toFixed(1)}</td>
+          <td>${Nturns.toFixed(2)}</td>
+          <td>${outer_diameter.toFixed(1)}</td>
+          <td class="actions">
+            <button class="visualize-btn" onclick="visualize(${L}, ${theta}, ${tau}, ${Nsegments}, ${pipeDiameter})">View</button>
+            <button class="visualize-btn secondary" onclick="inspect(${outerLength}, ${theta}, ${tau}, ${Nsegments}, ${pipeDiameter})">Inspect</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    function visualize(L, theta, tau, segments, pipeDiameter) {
+      const params = new URLSearchParams({ L, theta, tau, segments, pipeDiameter });
+      window.open('visualize.html?' + params.toString(), '_blank');
+    }
+
+    function inspect(outerLength, theta, tau, segments, pipeDiameter) {
+      const params = new URLSearchParams({ outerLength, theta, tau, segments, pipeDiameter });
+      window.location.href = 'playground.html?' + params.toString();
+    }
+
+    document.getElementById('calcBtn').addEventListener('click', calcHelices);
+  </script>
+
+
+  <article>
+    <h2>Usage</h2>
+    <h3>Input values</h3>
+    <img src = "pipe.png" style = "width: 50%; background-color: white; font-family: sans-serif; padding: 20px; border-radius: 20px; justify-content: center; margin-left: 20%; text-align: center">
+
+    <h4>Desired height</h4>
+
+    The desired height is the final height you want from the helix along the axis.
+    This means, if you have a box that has this height the helix will fit in it.
+    <br><br>
+    <h3>What is calculated?</h3>
+    When you press the <button class="contrast" style = "transform: scale(0.7);">Calculate</button> button above, the program will try to find a list of helices that are allowed with these input parameters.
+    <i>Allowed</i> means that the a second helix rotated by 180 degrees will fit in there, so that helix has to be wide enough and it cannot be too tight. Increasing twist angle makes it less tight but also less wide.
+    
+    <ul>
+      <li>You can click <b>View</b> to view what the helix with these parameters would look like (a new tab will open).</li>
+      <li>You can click <b>Inspect</b> to open the Playground, where you can tweak with the number of segments, twist angle, etc.</li>
+    </ul>
+
+    <br>
+    <h3>Output values</h3>
+    <ul>
+      <li>Twist angle: The angle by which you need to twist the next segment before joining them. This is what changes the joining from just a donut to a helix.</li>
+      <li># Segments: The number of segments you will need to reach the desired length. It will always tend to stay below the desired length.</li>
+      <li>Height: The actual length (height) of the helix you will get when putting this many segments together. Note that this height is calculated from the center of the first pipe segment face to the last one. The true dimension of the spiral will always be slightly larger because the segments give a bit of overhang. The height will never be off by more than one pipe diameter.</li>
+      <li># Turns: The number of turns of this helix. Imagine viewing the helix from the top. This is the number of circles this view from the top traces.</li>
+      <li>Outer Ø: Outer diameter of the helix. Kind of the "width" of the helix. If you have a box that is this wide, the helix will fit in there.</li>
+    </ul>
+    
+    <h3>Notes</h3>
+    <ul>
+      <li>The twist angle is what determines if the helix is "allowed", i.e. not too tight and wide enough. Only a selection of twist angles is shown, and especially sometimes tighter helices are allowed than are shown. Use the playground to see what is possible.</li>
+      <li>If you don't get any valid helices, you need to change some parameters. Either increase the outer length or decrease pipe diameter &mdash; those are most important when it comes to this.</li>
+      <li>For practical purposes, consider that you will possibly need extra clearance.</li>
+    </ul>
+
+
+  </article>
+</body>
+</html>

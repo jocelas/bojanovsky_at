@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monty Hall Simulation</title>
+    <style>
+        #error-message {
+            color: rgb(255, 0, 0);
+            display: none;
+        }
+
+        table {
+            border-collapse: collapse; /* Ensures borders don't double between cells */
+            width: 100%; /* Optional: makes the table take the full width */
+        }
+
+        th, td {
+            border: 1px solid black; /* Adds a border around each cell */
+            padding: 8px; /* Adds some padding inside cells */
+            text-align: left; /* Aligns text to the left */
+        }
+    </style>
+    <script>
+        // In this part of the script, the logic of the simulation is written, i.e. the mathematics
+
+        function makeDoors(n, p) {
+            // creates an array of 0s and 1s in order. 1 represents full door, 0 empty.
+            // Example makeDoors(2,1) = [0,0,1]
+            return new Array(n).fill(0).concat(new Array(p).fill(1));
+        }
+
+        function randomGuess(doors) {
+            // Guesses a random door (number from array), and ouputs the value, as well as the input array doors with the chosen Element removed.
+            // The chosen element is removed, so that it cannot be chosen again
+            let pos = Math.floor(Math.random() * doors.length);
+            let value = doors[pos];
+            doors.splice(pos, 1); 
+            return [doors, value];
+        }
+
+        function runStatistics(empty, full, opened, runs) {
+            // runs the Experiment.
+
+            // these arrays will store the number of correct guesses divided by number of total runs so far (i.e. the 'probability')
+            // Initial: no switch; Final: yes switch
+            let initial = new Array(runs).fill(0);
+            let final = new Array(runs).fill(0);
+
+            for (let j = 1; j < runs; j++) {
+                // this runs the experiment #runs# number of times
+
+                let doors = makeDoors(empty, full); // initiate array of doors
+                [doors, i] = randomGuess(doors); // make initial guess (i is the value of the guess)
+                doors = doors.slice(opened); // This is the steps which 'opens' the doors. the first #opened# doors (which all contain 0) are opened, i.e. removed from the array
+                [_, f] = randomGuess(doors); // this represents the switch. Since the first guess has removed the initial guess, we prevent 'switching' to the same door
+
+                // these calculate the ratio of successes so far with respect to the index j (the 'probability')
+                initial[j] = ((initial[j - 1] * (j - 1)) + i) / j;
+                final[j] = ((final[j - 1] * (j - 1)) + f) / j;
+            }
+
+            return [initial, final];
+        }
+        </script>
+        <script>
+        // This script is concerned with drawing the plot (unnecessary for understanding logic)
+        function drawAxes(ctx, width, height, runs) {
+
+            // Axis labels
+            ctx.fillStyle = 'black';
+            ctx.font = '16px Arial';
+            ctx.fillText('Simulations', width / 2 - 40, height - 10);
+            ctx.save();
+            ctx.translate(20, height / 2 + 40);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('Success Rate (%)', 0, -5);
+            ctx.restore();
+            ctx.strokeStyle = 'black';
+
+            // Draw axes with tick marks and labels
+            ctx.beginPath();
+            ctx.moveTo(50, 50); 
+            ctx.lineTo(50, height - 50); 
+            ctx.lineTo(width - 50, height - 50);
+            ctx.stroke();
+
+            // X-axis ticks and labels (for runs)
+            let xTicks = 5;
+            let xTickSpacing = (width - 100) / xTicks;
+            for (let i = 0; i <= xTicks; i++) {
+                let x = 50 + i * xTickSpacing;
+                let xLabel = Math.round((i / xTicks) * runs);
+                ctx.moveTo(x, height - 50);
+                ctx.lineTo(x, height - 45);
+                ctx.stroke();
+                ctx.fillText(xLabel, x - 10, height - 30);
+            }
+
+            // Y-axis ticks and labels (for probabilities)
+            let yTicks = 10;
+            let yTickSpacing = (height - 100) / yTicks;
+            for (let i = 0; i <= yTicks; i++) {
+                let y = height - 50 - i * yTickSpacing;
+                let yLabel = (i / yTicks)*100;
+                ctx.moveTo(50, y);
+                ctx.lineTo(55, y);
+                ctx.stroke();
+                ctx.fillText(yLabel, 20, y + 5);
+            }
+
+        }
+
+        function drawChart(initial, final, empty, full, opened, runs) {
+            let canvas = document.getElementById('montyHallChart');
+            let ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            let width = canvas.width;
+            let height = canvas.height;
+
+            drawAxes(ctx, width, height, runs);
+
+            let maxRuns = initial.length;
+            let xScale = (width - 100) / maxRuns;
+            let yScale = (height - 100);
+
+            // Plot 'final' (switch)
+            ctx.strokeStyle = 'blue';
+            ctx.beginPath();
+            for (let i = 0; i < final.length; i++) {
+                let x = 50 + i * xScale;
+                let y = height - 50 - final[i] * yScale;
+                ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // Plot 'initial' (no switch) - ensure only valid data is plotted
+            ctx.strokeStyle = 'red';
+            ctx.beginPath();
+            for (let i = 0; i < initial.length; i++) {
+                let x = 50 + i * xScale;
+                let y = height - 50 - initial[i] * yScale;
+                ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        }
+
+        function runSimulation() {
+            let empty = parseInt(document.getElementById('empty').value);
+            let full = parseInt(document.getElementById('full').value);
+            let opened = parseInt(document.getElementById('opened').value);
+            let runs = parseInt(document.getElementById('runs').value);
+
+            let errorMessage = document.getElementById('error-message');
+            if (opened >= empty) {
+                errorMessage.style.display = 'block';
+                return;
+            } else {
+                errorMessage.style.display = 'none';
+            }
+
+            let [initial, final] = runStatistics(empty, full, opened, runs);
+
+            document.getElementById('nores').innerHTML = (initial[runs-1]*100).toFixed(2)+ ' %';
+            document.getElementById('yesres').innerHTML = (final[runs-1]*100).toFixed(2) + ' %';
+            document.getElementById('results').style.display = "block";
+
+            drawChart(initial, final, empty, full, opened, runs);
+
+            document.getElementById('description').innerHTML = `Monty Hall simulation with ${empty} empty doors, ${full} full door(s) (with a prize), and ${opened} door(s) opened before the switch. <br>Blue Line: Switching, Red Line: Not Switching`;
+        }
+    </script>
+</head>
+<body>
+    <h1>Monty Hall Problem Simulation</h1>
+    <p style = 'width: 50%'>
+    This is a (generalized) Monty Hallo problem simulator. It gives a plot for the sucess rate when switching and not switching your initial guess.<br>
+    First, a random door is chosen, then a chosen number of empty doors is opened. After that, the initial guess is switched to a different, random, door (excluding the initially chosen one).
+    The graph shows the success rate with a higher number of runs.
+    </p>
+    <form id="montyHallForm">
+        <label for="empty">Number of Empty Doors:</label>
+        <input type="number" id="empty" value="2" min="1" required><br><br>
+        
+        <label for="full">Number of Full Doors (with a prize):</label>
+        <input type="number" id="full" value="1" min="1" required><br><br>
+        
+        <label for="opened">Number of Opened Doors after initial guess:</label>
+        <input type="number" id="opened" value="1" min="0" required><br><br>
+
+        <label for="runs">Number of Simulations:</label>
+        <input type="number" id="runs" value="1000" min="1" required><br><br>
+
+        <button type="button" onclick="runSimulation()">Run Simulation</button>
+    </form>
+
+    <p id="description", style = "width: 50%"></p> 
+    <p id="error-message">Error: The number of opened doors must be less than the number of empty doors!</p>
+    <table id="results" style = "display: none;">
+        <tr>
+            <th>No switch</th>
+            <th>Switch</th>
+        </tr>
+        <tr>
+            <td id="nores"></td>
+            <td id="yesres"></td>
+        </tr>
+    </table>
+    <canvas id="montyHallChart" width="600" height="400"></canvas>
+    </body>
+</html>

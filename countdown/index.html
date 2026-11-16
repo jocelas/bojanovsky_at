@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<link rel="icon" type="image/x-icon" href="../favicon.ico">
+  <meta charset="UTF-8">
+  <title>New Year Countdown</title>
+  <style>
+  
+    body {
+      font-family: 'Arial', sans-serif;
+	  font-size:200%;
+	  margin: auto;
+	  width: 100vw;
+	  overflow-wrap: break-word;
+	  	  text-align:center
+
+    }
+	
+	#countdown {
+		text-align: left;
+		margin: auto;
+		margin-bottom: 0cm;
+	
+	
+	select{
+		line-height: 200%;
+		padding:50px;
+	}
+  </style>
+</head>
+<body>
+
+<h1 id = "title">New Year Countdown</h1>
+<label for="timezone">Select Time Zone 	<span id='yourtimezone'></span>: </label>
+<select id="timezone" style='font-size:inherit'>
+  <option selected="selected" value="0">UTC</option>
+  <option value="1">+1</option>
+  <option value="2">+2</option>
+  <option value="3">+3</option>
+  <option value="4">+4</option>
+  <option value="5">+5</option>
+  <option value="6">+6</option>
+  <option value="7">+7</option>
+  <option value="8">+8</option>
+  <option value="9">+9</option>
+  <option value="10">+10</option>
+  <option value="11">+11</option>
+  <option value="12">+12</option>
+  <option value="13">+13</option>
+  <option value="-1">-1</option>
+  <option value="-2">-2</option>
+  <option value="-3">-3</option>
+  <option value="-4">-4</option>
+  <option value="-5">-5</option>
+  <option value="-6">-6</option>
+  <option value="-7">-7</option>
+  <option value="-8">-8</option>
+  <option value="-9">-9</option>
+  <option value="-10">-10</option>	
+  <option value="-11">-11</option>
+  <option value="-12">-12</option>
+  <option value="-13">-13</option>
+  <option value='other'>Other</option>
+</select>
+<span id = 'other' > <input  style='font-size:inherit' step = '1' placeholder = '0' type='number' id='othertz' oninput='settz();'>   <input  style='font-size:inherit; padding: 14px; height:1em; width:1em' id = 'half' type='checkbox' oninput='settz();'>+ 1/2</span>
+
+<div style = 'font-size: 10em; display:block; overflow: nowrap; height: auto;' class ='mega' id="mega"></div>
+
+<div id="countdown"></div>
+</>
+<script>
+var timeZone = new Number();
+var halfmin = 0; //half-timezone minutes
+
+function settz(){
+	timeZone = document.getElementById('othertz').value;
+	var half = document.getElementById('half').checked;
+	if (half == true){
+		halfmin = 30;
+	} else {
+		halfmin = 0;
+	}
+}
+
+
+function updateCountdown() {
+	const countdownElement = document.getElementById('countdown');
+	const timezoneSelector = document.getElementById('timezone');
+	const selectedTimezone = timezoneSelector.value;
+	const other = document.getElementById('other');
+	
+	
+	if (selectedTimezone == 'other') {
+		other.style.visibility = 'initial';
+	} else {
+		other.style.visibility = 'hidden';
+		timeZone = selectedTimezone;
+		halfmin=0;
+	}
+	
+
+	
+	var date = new Date(); //the date in computer time zone
+	var now = Date.now(); //milliseconds in computer time zone
+	diff = date.getTimezoneOffset()*60000; //offset from UTC in milliseconds
+	now = now+diff; //Milliseconds to be displayed in UTC
+	utcdate = new Date(now); //The date in the UTC time zone
+	timezonedate = new Date(now+timeZone*3600000+halfmin*60000); //date in time zone set by person
+	var nextYear = timezonedate.getFullYear()+1; //The next year in the time zone set by person
+	var nextYearDate = new Date(nextYear, 0, 1, -timeZone, -halfmin);	//Date of next year in set time zone
+	var seconds = (nextYearDate-now)/1000; //seconds until next year
+	var minutes = Math.floor(seconds/60); //minutes
+	var hours = Math.floor(minutes/60); //hours
+	var days = Math.floor(hours/24); //days
+	
+	restHours = Math.floor(hours % 24); //hours since full day
+	restMinutes = Math.floor(minutes % 60); //etc.
+	restSeconds = Math.floor(seconds % 60);
+	restMilliseconds = ((seconds % 60 - restSeconds)*1000).toFixed(0)
+	
+	
+	//display big Countdown
+	document.getElementById('mega').innerHTML = Number(Math.ceil(seconds)).toFixed(0);
+	
+	//display other countdowns
+	countdownElement.innerHTML = "<br>Remaining seconds: " + seconds;
+	countdownElement.innerHTML += "<br>Remaining Minutes: " + Math.floor(minutes);
+	countdownElement.innerHTML += "<br>Remaining Hours: " + Math.floor(hours);
+	countdownElement.innerHTML += "<br>Remaining Time: "+ days + " days + " + Math.floor(restHours) +" h + "+ restMinutes +" m + "+restSeconds+" s + " + restMilliseconds + ' ms';
+	countdownElement.innerHTML += "<br>Current Time:" + timezonedate.getHours() +":"+timezonedate.getMinutes()+":"+timezonedate.getSeconds();
+	
+	//display the title with the next year in the set time zone
+	document.getElementById('title').innerHTML = 'New Year Countdown ' + nextYear;
+	
+	//get sign to display (only +, - is automatic)
+	var sign = ''
+	if (diff <= 0){
+		sign = '+';
+	}
+	//display computer time zone
+	document.getElementById('yourtimezone').innerHTML = '(Your Time Zone: UTC'+ sign + -diff/60000/60+')'
+
+  // Update every 1/1000 second
+	setTimeout(updateCountdown, 1);
+}
+
+// Initial call to start the countdown
+updateCountdown();
+</script>
+
+</body>
+</html>

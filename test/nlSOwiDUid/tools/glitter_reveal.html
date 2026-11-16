@@ -1,0 +1,158 @@
+<!-- Golden Glitter Effect -->
+<canvas id="glitter-canvas"></canvas>
+<style>
+    #glitter-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 9999;
+        pointer-events: none;
+    }
+</style>
+<script>
+(function() {
+    var canvas = document.getElementById('glitter-canvas');
+    var ctx = canvas.getContext('2d');
+    var dpr = window.devicePixelRatio || 1;
+    var W, H;
+    var scrollY = 0;
+    var prevScrollY = 0;
+    var scrollVel = 0;
+
+    function resize() {
+        W = window.innerWidth;
+        H = window.innerHeight;
+        canvas.width = W * dpr;
+        canvas.height = H * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+    window.addEventListener('scroll', function() {
+        scrollY = window.pageYOffset || document.documentElement.scrollTop;
+    });
+
+    var goldColors = [
+        '#FFD700', '#E8D48B', '#C9A84C', '#FFFACD',
+        '#F5EEDD', '#DAA520', '#FFF8DC', '#FFE066'
+    ];
+
+    // Intro burst particles (many, fade out)
+    var introParticles = [];
+    var introCount = Math.min(200, Math.floor(W * H / 3500));
+    for (var i = 0; i < introCount; i++) {
+        introParticles.push({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            size: Math.random() * 4.5 + 1.5,
+            color: goldColors[Math.floor(Math.random() * goldColors.length)],
+            alpha: Math.random() * 0.9 + 0.1,
+            twinkleSpeed: Math.random() * 0.08 + 0.03,
+            twinkleOffset: Math.random() * Math.PI * 2,
+            drift: (Math.random() - 0.5) * 0.6,
+            fall: Math.random() * 0.8 + 0.3
+        });
+    }
+
+    // Ambient particles (fewer, stay forever, react to scroll)
+    var ambientParticles = [];
+    var ambientCount = Math.min(40, Math.floor(W * H / 20000));
+    for (var i = 0; i < ambientCount; i++) {
+        ambientParticles.push({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            size: Math.random() * 2.5 + 1,
+            color: goldColors[Math.floor(Math.random() * goldColors.length)],
+            alpha: Math.random() * 0.4 + 0.1,
+            twinkleSpeed: Math.random() * 0.04 + 0.01,
+            twinkleOffset: Math.random() * Math.PI * 2,
+            baseDrift: (Math.random() - 0.5) * 0.15,
+            baseFall: Math.random() * 0.15 + 0.05,
+            scrollSensitivity: Math.random() * 0.6 + 0.2
+        });
+    }
+
+    var startTime = performance.now();
+    var introDuration = 2500;
+
+    function drawParticle(p, alpha) {
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = p.color;
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = p.size * 3;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+
+    function draw(now) {
+        var elapsed = now - startTime;
+        var introProgress = Math.min(elapsed / introDuration, 1);
+
+        // Smooth scroll velocity
+        scrollVel = scrollVel * 0.85 + (scrollY - prevScrollY) * 0.15;
+        prevScrollY = scrollY;
+
+        ctx.clearRect(0, 0, W, H);
+
+        // --- Intro burst particles ---
+        if (introProgress < 1) {
+            // Fade: start bright, taper off
+            var introAlphaMultiplier;
+            if (introProgress < 0.15) {
+                introAlphaMultiplier = introProgress / 0.15;
+            } else if (introProgress > 0.5) {
+                introAlphaMultiplier = 1 - (introProgress - 0.5) / 0.5;
+            } else {
+                introAlphaMultiplier = 1;
+            }
+
+            for (var i = 0; i < introParticles.length; i++) {
+                var p = introParticles[i];
+                var twinkle = Math.sin(now * p.twinkleSpeed * 0.01 + p.twinkleOffset);
+                var alpha = p.alpha * (0.5 + 0.5 * twinkle) * introAlphaMultiplier;
+
+                p.x += p.drift;
+                p.y += p.fall;
+
+                if (p.y > H + 10) { p.y = -10; p.x = Math.random() * W; }
+                if (p.x < -10) p.x = W + 10;
+                if (p.x > W + 10) p.x = -10;
+
+                drawParticle(p, alpha);
+            }
+        }
+
+        // --- Ambient particles (always visible, scroll-reactive) ---
+        for (var i = 0; i < ambientParticles.length; i++) {
+            var p = ambientParticles[i];
+            var twinkle = Math.sin(now * p.twinkleSpeed * 0.01 + p.twinkleOffset);
+            var alpha = p.alpha * (0.5 + 0.5 * twinkle);
+
+            // Scroll swoosh: push particles sideways and vertically
+            var scrollPush = scrollVel * p.scrollSensitivity;
+            p.x += p.baseDrift + scrollPush * 0.3 * (i % 2 === 0 ? 1 : -1);
+            p.y += p.baseFall - scrollPush * 0.15;
+
+            // Boost alpha when scrolling
+            var scrollBoost = Math.min(Math.abs(scrollVel) * 0.04, 0.4);
+            alpha = Math.min(alpha + scrollBoost, 0.7);
+
+            if (p.y > H + 10) { p.y = -10; p.x = Math.random() * W; }
+            if (p.y < -10) { p.y = H + 10; p.x = Math.random() * W; }
+            if (p.x < -10) p.x = W + 10;
+            if (p.x > W + 10) p.x = -10;
+
+            drawParticle(p, alpha);
+        }
+
+        requestAnimationFrame(draw);
+    }
+
+    requestAnimationFrame(draw);
+})();
+</script>

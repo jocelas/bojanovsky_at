@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Random Čůzr</title>
+  <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+  <style>
+    body { text-align: center; padding: 1rem; }
+    canvas { width: 95%; max-width: 800px; aspect-ratio: 1; cursor: pointer; display: block; margin: 0 auto;}
+    #result { font-size: 1.3rem; font-weight: bold; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>Random Čůzr</h1>
+    <textarea id="options" rows="6" placeholder="Zadej možnosti (každou na nový řádek, volitelně s váhou: <Možnost> ; <váha>"></textarea>
+    <div id="result"></div>
+    <p>Klikni na kolo pro roztočení.</p>
+    <canvas id="wheel" width="400" height='400'></canvas>
+  </main>
+
+  <script>
+    const canvas = document.getElementById("wheel");
+    const ctx = canvas.getContext("2d");
+    const resultDiv = document.getElementById("result");
+    const textarea = document.getElementById("options");
+
+    let options = [];
+    let startAngle = Math.PI / 2;
+    let spinning = false;
+
+    textarea.addEventListener("input", parseOptions);
+    window.onload = parseOptions;
+
+    function parseOptions() {
+      options = textarea.value
+        .split("\n")
+        .map(line => {
+          const parts = line.split(";");
+          const text = parts[0]?.trim();
+          const weight = parseFloat(parts[1]) || 1;
+          return text ? { text, weight } : null;
+        })
+        .filter(Boolean);
+      drawWheel();
+    }
+
+    function drawWheel() {
+      const radius = canvas.width / 2;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (options.length === 0) return;
+
+      const totalWeight = options.reduce((sum, o) => sum + o.weight, 0);
+      let currentAngle = startAngle;
+
+      for (let i = 0; i < options.length; i++) {
+        const sliceAngle = 2 * Math.PI * (options[i].weight / totalWeight);
+        const nextAngle = currentAngle + sliceAngle;
+
+        ctx.beginPath();
+        ctx.moveTo(radius, radius);
+        ctx.fillStyle = `hsl(${i * 360 / options.length}, 55%, 55%)`;
+        ctx.arc(radius, radius, radius, currentAngle, nextAngle);
+        ctx.closePath();
+        ctx.fill();
+
+	// Text
+        ctx.save();
+        ctx.translate(radius, radius);
+        ctx.rotate(currentAngle + sliceAngle / 2);
+        ctx.translate(radius * 0.75, 0);
+        ctx.rotate(Math.PI / 2);
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "#000";
+        ctx.font = "bold 1.2em sans-serif";
+        ctx.fillText(options[i].text, 0, 0);
+        ctx.restore();
+
+        currentAngle = nextAngle;
+      }
+
+      // pointer
+      ctx.fillStyle = "yellow";
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(radius, 0);
+      ctx.lineTo(radius - 10, 20);
+      ctx.lineTo(radius + 10, 20);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    canvas.onclick = spin;
+
+    function spin() {
+
+      resultDiv.textContent = " ";
+      if (options.length === 0 || spinning) return;
+      spinning = true;
+      
+      resultDiv.textContent = "točí se...";
+
+      let spinTime = 0;
+      const spinDuration = 4000 + Math.random() * 2000;
+      const finalAngle = Math.random() * 2 * Math.PI;
+
+      const totalWeight = options.reduce((sum, o) => sum + o.weight, 0);
+      const sliceAngles = options.map(o => 2 * Math.PI * (o.weight / totalWeight));
+
+      const spinAnimation = () => {
+        if (!spinning) return;
+        spinTime += 16;
+        const progress = spinTime / spinDuration;
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        startAngle = easeOut * (10 * Math.PI + finalAngle);
+        drawWheel();
+
+        if (spinTime < spinDuration) {
+          requestAnimationFrame(spinAnimation);
+        } else {
+          spinning = false;
+	// compensate for startAngle offset (π/2)
+	const pointerAngle = (startAngle + Math.PI / 2) % (2 * Math.PI);
+	const finalPos = (2 * Math.PI - pointerAngle) % (2 * Math.PI);
+          let cumulative = 0;
+          let chosenIndex = 0;
+
+          for (let i = 0; i < sliceAngles.length; i++) {
+            cumulative += sliceAngles[i];
+            if (finalPos <= cumulative) {
+              chosenIndex = i;
+              break;
+            }
+          }
+
+          resultDiv.textContent = "Vybráno: " + options[chosenIndex].text;
+        }
+      };
+
+      requestAnimationFrame(spinAnimation);
+    }
+  </script>
+</body>
+</html>
+

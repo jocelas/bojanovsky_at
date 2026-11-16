@@ -1,0 +1,75 @@
+<head>
+<meta charset="utf-8">
+
+<title>Jonas Bojanovsky</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap');
+</style>
+	
+<style>
+	.abril-fatface-regular {
+  		font-family: "Abril Fatface", serif;
+  		font-weight: 400;
+  		font-style: normal;
+	}
+	
+	body {
+		display: grid;
+		
+		min-height: 80vh
+		align-items: center;
+		place-items: center;
+	}
+	
+	h1 {
+		font-size: 18vw;
+		line-height: 1.08ex;
+		cursor: default;
+	}
+	
+	h1::selection{
+		cursor: default;
+	}
+</style>
+
+<script type="text/javascript">
+function clock()
+{
+var today=new Date();
+var Y=today.getFullYear();
+var M=today.getMonth();
+var D=today.getDate();
+var h=today.getHours();
+var m=today.getMinutes();
+var s=today.getSeconds();
+// add a zero in front of numbers<10
+M=M+1;
+D=checkTime(D);
+M=checkTime(M);
+h=checkTime(h)
+m=checkTime(m);
+s=checkTime(s);
+document.getElementById('time').innerHTML=D+"."+M+"."+Y+" — "+h+":"+m+":"+s;
+t=setTimeout('clock()',100);
+}
+function checkTime(i)
+{
+if (i<10)
+{
+i="0" + i;
+}
+return i;
+}
+</script>
+</head>
+<body style = "font-family:sans-serif;" onload="clock()">
+<div style = "text-align:center;">
+	<h1 class = "abril-fatface-regular">Jonas<br><span style="display: inline-block; width: 1.5vw"></span>Bojanovsky</h1>
+<div style = "font-size:2em;font-family:monospace;" id="time"></div>
+
+
+
+</div>
+</body>
