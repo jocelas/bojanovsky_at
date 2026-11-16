@@ -1,158 +1,68 @@
-<!doctype html>
-<head>
-<meta charset = 'utf-8'?>
-<title>Jonas Bojanovsky — Gallery</title>
-<link rel="icon" type="image/x-icon" href="../favicon.ico">
-<link rel="stylesheet" href="style.css">
-
-
 <?php
-
-$path = './photos/';
-$files = scandir($path, SCANDIR_SORT_DESCENDING);
-$ims = array();
-
-$j = 0;
-
-
-foreach ($files as $value){
-	if (substr($value, -3) == 'jpg'){
-		$ims[$j] = $path . $value;
-		$j = $j + 1;
-	}
+$photoDirectory = __DIR__ . '/photos';
+$files = is_dir($photoDirectory) ? scandir($photoDirectory, SCANDIR_SORT_DESCENDING) : [];
+$photos = [];
+foreach ($files ?: [] as $file) {
+    if (!is_file($photoDirectory . '/' . $file) || !preg_match('/\.(jpe?g|png|webp)$/i', $file)) {
+        continue;
+    }
+    $captionPath = $photoDirectory . '/' . pathinfo($file, PATHINFO_FILENAME) . '.txt';
+    $caption = is_readable($captionPath) ? trim(file_get_contents($captionPath)) : '';
+    $thumbnail = 'thumbnails/' . rawurlencode($file) . '.webp';
+    $photos[] = [
+        'original' => 'photos/' . rawurlencode($file),
+        'thumbnail' => is_file(__DIR__ . '/thumbnails/' . $file . '.webp')
+            ? $thumbnail : 'photos/' . rawurlencode($file),
+        'caption' => $caption,
+        'label' => $caption !== '' ? $caption : pathinfo($file, PATHINFO_FILENAME),
+    ];
 }
-
-
-function getPhotos($files, $path){
-	// this function outputs the array
-	print '[';
-	foreach ($files as $value) {
-		if (substr($value, -3) == 'jpg'){
-			print '"' . $path . $value . '", ';
-		}
-	}
-	print ']';
+function galleryEscape($text) {
+    return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
-
-function getDescriptions($files, $path){
-	//$files = scandir($path, SCANDIR_SORT_DESCENDING);
-	// this function outputs the array
-	
-	print '[';
-	foreach ($files as $value) {
-		if (substr($value, -3) == 'txt'){
-			$file = $path . $value;
-			$descr = file_get_contents($file);
-			print '"' . $descr . '", ';
-			
-		}
-	}
-	print ']';
-}
-
-function thisDescription($namepath){
-	$namepath = substr($namepath, 0,-3);
-	$namepath = $namepath . 'txt';
-	$descr = file_get_contents($namepath);
-	return $descr;
-}
-
-$i = 2;
-
 ?>
-
-<script>
-//var fs = require('fs');
-//var ims = fs.readdirSync('photos/');
-
-const ims = <?php getPhotos($files, $path); ?>;
-const descrs = <?php getDescriptions($files, $path); ?>;
-var i = 0;
-var out = '';
-
-var numcols = 4;	
-var size = '25vw';
- /*
-function maketable(filename) {
-	if (i==0){
-		out += '<tr>';
-	}
-	out += '<td style = "width: '+size+'; height: '+size+'"><a href = "'+filename+'"><img src = "'+filename+'" class = "tn"></a></td>';
-	i++;
-	if (i == numcols){
-		out += '</tr>';
-		i = 0;
-	}
-}
-*/
-
-
-function maketable(ims, descrs){
-	var n = ims.length;
-	
-	for (let j = 0; j < n; j++){
-		if (i==0){
-			out += '<tr>';
-		}
-
-		image = ims[j];
-		description = descrs[j];
-		
-		
-		out += '<td style = "width: '+size+'; height: '+size+'"><a href = "'+image+'"><img src = "'+image+'" class = "tn"><div class = "des">'+description+'</div></a></td>';
-		i++;
-		if (i == numcols){
-			out += '</tr>';
-			i = 0;
-		}
-	}
-}
-
-
-function writetable(table){
-	document.getElementById('maintable').innerHTML = table;
-}
-
-function changecols() {
-
-	if (window.innerWidth < window.innerHeight){
-		numcols = 2;
-	} else {
-		numcols = 4;
-	}
-	
-	//var td = document.querySelector('table#maintable tr td');
-	
-	if (numcols == 2){
-		size = '50vw'
-	} else {
-		size = '25vw';
-	}
-	
-	out = '';
-	i = 0;
-	maketable(ims, descrs);
-	writetable(out);
-
-}
-
-window.onload = function(){
-	maketable(ims, descrs);
-	writetable(out);
-	changecols();
-}
-</script> 
-
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A collection of photographs by Jonas Bojanovsky.">
+  <title>Jonas Bojanovsky — Gallery</title>
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../theme.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../theme.js" defer></script>
+  <script src="gallery.js" defer></script>
 </head>
-
-<body onresize = 'changecols();'>
-
-<div class = 'container'>
-<h1>Gallery</h1>
-<table class = 'thumbnails' id = 'maintable'>
-<!-- here are the photos by the script -->
-<? //print_r($ims); ?>
-</table>
-
-</div>
+<body>
+  <button class="theme-toggle" type="button" hidden>Switch theme</button>
+  <main class="container">
+    <header class="gallery-header">
+      <a class="home-link" href="../">← Jonas Bojanovsky</a>
+      <h1>Gallery</h1>
+      <p><?= count($photos) ?> photographs <span aria-hidden="true">/</span> Click to explore.</p>
+    </header>
+    <div class="gallery-grid">
+      <?php foreach ($photos as $index => $photo): ?>
+        <a class="photo" href="<?= galleryEscape($photo['original']) ?>" data-index="<?= $index ?>" data-caption="<?= galleryEscape($photo['caption']) ?>" aria-label="<?= galleryEscape('Enlarge photograph: ' . $photo['label']) ?>">
+          <img src="<?= galleryEscape($photo['thumbnail']) ?>" alt="<?= galleryEscape($photo['label']) ?>" width="640" height="640" loading="<?= $index < 4 ? 'eager' : 'lazy' ?>" decoding="async">
+          <?php if ($photo['caption'] !== ''): ?>
+            <span class="photo-caption"><?= galleryEscape($photo['caption']) ?></span>
+          <?php endif; ?>
+        </a>
+      <?php endforeach; ?>
+    </div>
+    <?php if (!$photos): ?><p class="empty-state">No photographs yet. Check back soon.</p><?php endif; ?>
+  </main>
+  <dialog class="lightbox" aria-label="Photograph viewer" aria-describedby="viewer-caption">
+    <button class="viewer-close viewer-button" type="button" aria-label="Close photograph" title="Close (Esc)" autofocus>×</button>
+    <button class="viewer-previous viewer-button" type="button" aria-label="Previous photograph" title="Previous (←)">‹</button>
+    <figure class="viewer-figure">
+      <img class="viewer-image" alt="">
+      <figcaption id="viewer-caption"></figcaption>
+      <p class="viewer-status" role="status" aria-live="polite"></p>
+    </figure>
+    <button class="viewer-next viewer-button" type="button" aria-label="Next photograph" title="Next (→)">›</button>
+  </dialog>
 </body>
+</html>

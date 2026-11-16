@@ -1,0 +1,55 @@
+:root {
+  color-scheme: light;
+  --foreground: #24211e;
+  --name-color: var(--foreground);
+  --background: #f5f2eb;
+  --surface: #eae6de;
+  --border: #d9d4cb;
+  --muted: #68615a;
+  --accent-color: #a63d2f;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --foreground: #eee9df;
+    --name-color: #aaa59b;
+    --background: #191918;
+    --surface: #262624;
+    --border: #42413c;
+    --muted: #b5afa5;
+    --accent-color: #ee9a86;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --foreground: #eee9df;
+  --name-color: #aaa59b;
+  --background: #191918;
+  --surface: #262624;
+  --border: #42413c;
+  --muted: #b5afa5;
+  --accent-color: #ee9a86;
+}
+
+.theme-toggle {
+  box-sizing: border-box;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 1;
+  width: 42px;
+  height: 42px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--background);
+  color: var(--foreground);
+  font: 13px/1.5 monospace;
+  cursor: pointer;
+}
+
+.theme-toggle svg { display: block; width: 20px; height: 20px; }
+.theme-toggle:hover { border-color: var(--foreground); }
+.theme-toggle:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 4px; }

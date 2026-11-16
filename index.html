@@ -19,7 +19,6 @@
       --surname-offset: 1.5vw;
       --link-font: monospace;
       --link-size: clamp(13px, 1.1vw, 22px);
-      --accent-color: #A63D2F;
       --hover-scale: 1.03;
       --label-gap: 3px;
       --label-travel: 12px;
@@ -30,8 +29,6 @@
       --motion-easing: cubic-bezier(.2, .7, .2, 1);
       --intro-duration: 1000ms; /* Total wave, including the last pulse. */
       --intro-pulse-fraction: .48;
-      --foreground: #24211E;
-      --background: #F5F2EB;
       --list-width: 560px;
       --list-description-width: 32ch;
       --list-padding: 24px;
@@ -52,6 +49,7 @@
     /* Same font, size, line height, spacer, and default h1 margins as the original.
        Only the lower j's dot is clipped; its stem and descender stay intact. */
     h1 {
+      color: var(--name-color);
       font-family: var(--name-font);
       font-weight: 400;
       font-style: normal;
@@ -84,13 +82,13 @@
       text-decoration: none;
       display: block;
       padding: 20px 0;
-      border-top: 1px solid #dedbd7;
+      border-top: 1px solid var(--border);
       font-family: var(--link-font);
       font-size: 17px;
       line-height: 1.4;
       -webkit-tap-highlight-color: transparent;
     }
-    .project:last-child { border-bottom: 1px solid #dedbd7; }
+    .project:last-child { border-bottom: 1px solid var(--border); }
     .glyph { display: none; }
     .label, .label-text, .description { display: block; }
     .description {
@@ -119,6 +117,8 @@
         transition: color var(--motion-duration) var(--motion-easing), transform var(--motion-duration) var(--motion-easing);
       }
       .enhanced .glyph {
+        color: var(--name-color);
+        transition: color var(--motion-duration) var(--motion-easing);
         display: block;
         position: absolute;
         top: var(--glyph-offset, 0px);
@@ -167,6 +167,7 @@
       }
       .enhanced .project[data-side="below"] .description { bottom: auto; top: calc(100% + 5px); }
       .enhanced .project:is(:hover, :focus-visible, .intro-active) { color: var(--accent-color); transform: scale(var(--hover-scale)); }
+      .enhanced .project:is(:hover, :focus-visible, .intro-active) .glyph { color: inherit; }
       .enhanced .project:is(:hover, :focus-visible, .intro-active) .label-content { transform: translateY(calc(-1 * var(--label-travel))); }
       .enhanced .project[data-side="below"]:is(:hover, :focus-visible, .intro-active) .label-content { transform: translateY(var(--label-travel)); }
       .enhanced .project:is(:hover, :focus-visible, .intro-active) .description { opacity: var(--description-opacity); visibility: visible; transform: translate(-50%, 0); }
@@ -184,8 +185,11 @@
       .enhanced .project:is(:hover, :focus-visible, .intro-active) .label-content { transform: none; }
     }
   </style>
+  <link rel="stylesheet" href="theme.css">
+  <script src="theme.js" defer></script>
 </head>
 <body>
+  <button class="theme-toggle" type="button" hidden>Dark theme</button>
   <main class="composition">
     <h1 aria-label="Jonas Bojanovsky">Jonas<br><span class="surname-spacer"></span>Bojanovsky</h1>
     <div class="scroll-hint" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none"><path d="M10 3v13M5 11l5 5 5-5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
